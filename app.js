@@ -42,6 +42,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   wireLanguageToggle();
 });
 
+/**
+ * showScreen
+ */
 function showScreen(id) {
   document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
@@ -50,6 +53,9 @@ function showScreen(id) {
 /* ---------------------------------------------------------
    GEMINI CALL (via Cloudflare Worker proxy)
 --------------------------------------------------------- */
+/**
+ * callGemini (async)
+ */
 async function callGemini({ systemPrompt, userPrompt, jsonSchema }, retries = 5) {
   for (let i = 0; i < retries; i++) {
     const res = await fetch(CONFIG.WORKER_URL, {
@@ -82,6 +88,9 @@ async function callGemini({ systemPrompt, userPrompt, jsonSchema }, retries = 5)
 /* ---------------------------------------------------------
    1. UPLOAD + PDF PARSING (pdf.js, fully client-side)
 --------------------------------------------------------- */
+/**
+ * wireUpload
+ */
 function wireUpload() {
   const dz = document.getElementById("dropzone");
   const input = document.getElementById("fileInput");
@@ -105,6 +114,9 @@ function wireUpload() {
   });
 }
 
+/**
+ * handleFile (async)
+ */
 async function handleFile(file) {
   state.fileName = file.name;
   setStatus("uploadStatus", "Reading your document…");
@@ -141,6 +153,9 @@ async function handleFile(file) {
    (1., 1.1, 8.2, Section 4, Clause 12, ARTICLE III, etc.) and slices
    the page text at those boundaries. Deterministic — no LLM involved,
    this is the ground-truth index every AI claim gets checked against. */
+/**
+ * splitClauses
+ */
 function splitClauses(pages) {
   const headingRe = /(?:^|\n)\s*((?:Section|Clause|Article)\s+(?:\d+|[IVXLCDM]+)[A-Za-z]?(?:\.\d+)*|\d+(?:\.\d+){0,2})[\.\)]?\s+([A-Z][^\n]{2,80})/g;
   const clauses = [];
@@ -182,6 +197,9 @@ function splitClauses(pages) {
   return clauses;
 }
 
+/**
+ * clauseIndexText
+ */
 function clauseIndexText() {
   // Compact representation sent to the model: id, heading, page, text
   return state.clauses
@@ -193,6 +211,9 @@ function clauseIndexText() {
 /* ---------------------------------------------------------
    2. DOCUMENT TYPE DETECTION + INTAKE CHIPS
 --------------------------------------------------------- */
+/**
+ * detectDocType (async)
+ */
 async function detectDocType() {
   const schema = {
     type: "object",
@@ -231,6 +252,9 @@ do not invent generic ones.`;
   }
 }
 
+/**
+ * renderIntake
+ */
 function renderIntake() {
   document.getElementById("detectedType").textContent = state.docTypeLabel;
   const grid = document.getElementById("chipGrid");
@@ -267,6 +291,9 @@ function renderIntake() {
 /* ---------------------------------------------------------
    3. TARGETED ANALYSIS WITH CITATIONS + ABSTENTION
 --------------------------------------------------------- */
+/**
+ * runAnalysis (async)
+ */
 async function runAnalysis() {
   showScreen("analysisScreen");
   document.getElementById("pdfPaneText").textContent = state.fullText.slice(0, 20000);
@@ -340,10 +367,16 @@ MANDATORY RULES:
 /* Quote Verifier — this is the anti-hallucination check. Every quote the
    model returns is matched back against our own deterministic clause
    index before it's allowed to render as "verified". */
+/**
+ * normalize
+ */
 function normalize(s) {
   return (s || "").toLowerCase().replace(/\s+/g, " ").trim();
 }
 
+/**
+ * verifyFinding
+ */
 function verifyFinding(f) {
   if (!f.found || !f.quote) return { ...f, verified: false };
   const needle = normalize(f.quote);
@@ -354,6 +387,9 @@ function verifyFinding(f) {
   return { ...f, verified, resolvedClause: clause };
 }
 
+/**
+ * renderFindings
+ */
 function renderFindings() {
   const wrap = document.getElementById("findings");
   wrap.innerHTML = "";
@@ -361,13 +397,13 @@ function renderFindings() {
     const card = document.createElement("div");
     card.className = `finding-card risk-${f.risk || "neutral"}`;
     card.tabIndex = 0;
-    card.setAttribute("aria-label", `Finding: ${f.topic}`);
+    card.setAttribute("aria-label", `Finding: ${escapeHtml(f.topic)}`);
 
     const riskLabel = { green: "Standard", yellow: "Attention", red: "Unfavorable", neutral: "Not found" }[f.risk] || "Info";
 
     card.innerHTML = `
-      <div class="finding-topic">${f.topic}
-        <span class="risk-tag risk-${f.risk || "neutral"}">${riskLabel}</span>
+      <div class="finding-topic">${escapeHtml(f.topic)}
+        <span class="risk-tag risk-${f.risk || "neutral"}">${escapeHtml(riskLabel)}</span>
       </div>
       <div class="finding-explanation">${f.explanation}</div>
       ${f.found && f.quote ? `<blockquote class="finding-quote">"${escapeHtml(f.quote)}"</blockquote>` : ""}
@@ -390,6 +426,9 @@ function renderFindings() {
   });
 }
 
+/**
+ * jumpToClause
+ */
 function jumpToClause(clauseId) {
   const clause = state.clauses.find((c) => c.id === clauseId);
   if (!clause) return;
@@ -404,6 +443,9 @@ function jumpToClause(clauseId) {
   pane.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+/**
+ * escapeHtml
+ */
 function escapeHtml(s) {
   return (s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
@@ -411,6 +453,9 @@ function escapeHtml(s) {
 /* ---------------------------------------------------------
    4. MISSING-CLAUSE CHECKLIST (baseline diff, deterministic)
 --------------------------------------------------------- */
+/**
+ * computeMissing
+ */
 function computeMissing() {
   const baseline = BASELINES[state.docType]?.expected || [];
   const coveredTopics = new Set(state.findings.filter((f) => f.found).map((f) => f.topic.toLowerCase()));
@@ -423,6 +468,9 @@ function computeMissing() {
   renderMissing();
 }
 
+/**
+ * renderMissing
+ */
 function renderMissing() {
   const section = document.getElementById("missingSection");
   const list = document.getElementById("missingList");
@@ -437,7 +485,7 @@ function renderMissing() {
     row.className = "missing-card";
     row.innerHTML = `
       <div>
-        <div class="m-label">${m.label}</div>
+        <div class="m-label">${escapeHtml(m.label)}</div>
         <div class="m-why">${m.why}</div>
       </div>
       <button class="secondary add-missing" data-label="${escapeHtml(m.label)}">Add to Clarify Pack</button>
@@ -456,6 +504,9 @@ function renderMissing() {
 /* ---------------------------------------------------------
    5. GROUNDED ASK BOX (free-text questions, strict abstention)
 --------------------------------------------------------- */
+/**
+ * wireAsk
+ */
 function wireAsk() {
   document.getElementById("askBtn").addEventListener("click", askQuestion);
   document.getElementById("askInput").addEventListener("keydown", (e) => {
@@ -463,6 +514,9 @@ function wireAsk() {
   });
 }
 
+/**
+ * askQuestion (async)
+ */
 async function askQuestion() {
   const input = document.getElementById("askInput");
   const q = input.value.trim();
@@ -533,6 +587,9 @@ Never use outside knowledge to answer factual questions about the document's ter
 /* ---------------------------------------------------------
    6. CLARIFY PACK
 --------------------------------------------------------- */
+/**
+ * addClarifyItem
+ */
 function addClarifyItem(text) {
   if (!state.clarifyItems.includes(text)) state.clarifyItems.push(text);
   document.getElementById("clarifyCount").textContent = state.clarifyItems.length;
@@ -540,6 +597,9 @@ function addClarifyItem(text) {
   if (compareCount) compareCount.textContent = state.clarifyItems.length;
 }
 
+/**
+ * wireClarifyExport
+ */
 function wireClarifyExport() {
   const exportFn = () => {
     const w = window.open("", "_blank");
@@ -572,6 +632,9 @@ function wireClarifyExport() {
 /* ---------------------------------------------------------
    UI wiring for screen transitions
 --------------------------------------------------------- */
+/**
+ * setStatus
+ */
 function setStatus(id, msg) {
   const el = document.getElementById(id);
   if (el) el.textContent = msg;
@@ -584,6 +647,9 @@ document.addEventListener("click", (e) => {
 /* ---------------------------------------------------------
    7. COMPARE MODE (Step 1)
 --------------------------------------------------------- */
+/**
+ * wireCompare
+ */
 function wireCompare() {
   const btn = document.getElementById("compareDocsBtn");
   const input = document.getElementById("compareFileInput");
@@ -595,6 +661,9 @@ function wireCompare() {
   });
 }
 
+/**
+ * handleCompareFile (async)
+ */
 async function handleCompareFile(file) {
   state.docB.fileName = file.name;
   showScreen("compareScreen");
@@ -631,6 +700,9 @@ async function handleCompareFile(file) {
   await runCompareAnalysis();
 }
 
+/**
+ * runCompareAnalysis (async)
+ */
 async function runCompareAnalysis() {
   const topics = state.findings.map(f => f.topic);
   if (topics.length === 0) {
@@ -683,6 +755,9 @@ Then, provide a plain-English description (2-3 sentences) of what changed betwee
   }
 }
 
+/**
+ * verifyCompareQuote
+ */
 function verifyCompareQuote(quote, clauseId, clauses, fullText) {
   if (!quote) return { verified: false, resolvedClause: null };
   const needle = normalize(quote);
@@ -693,6 +768,9 @@ function verifyCompareQuote(quote, clauseId, clauses, fullText) {
   return { verified, resolvedClause: clause };
 }
 
+/**
+ * renderComparisons
+ */
 function renderComparisons(comparisons) {
   const wrap = document.getElementById("compareResults");
   wrap.innerHTML = "";
@@ -736,6 +814,9 @@ function renderComparisons(comparisons) {
 /* ---------------------------------------------------------
    8. LANGUAGE TRANSLATION
 --------------------------------------------------------- */
+/**
+ * wireLanguageToggle
+ */
 function wireLanguageToggle() {
   const select = document.getElementById('langSelect');
   if (!select) return;
@@ -744,6 +825,9 @@ function wireLanguageToggle() {
   });
 }
 
+/**
+ * translateFindings (async)
+ */
 async function translateFindings(lang) {
   state.findings.forEach(f => { if (!f.explanation_en) f.explanation_en = f.explanation; });
   state.missing.forEach(m => { if (!m.explanation_en) m.explanation_en = m.explanation; });
@@ -808,6 +892,9 @@ document.getElementById('compareLangSelect').addEventListener('change', (e) => {
   translateCompare(e.target.value);
 });
 
+/**
+ * startOver
+ */
 function startOver() {
   state.fileName = '';
   state.pages = [];
@@ -837,6 +924,9 @@ function startOver() {
   showScreen('uploadScreen');
 }
 
+/**
+ * translateCompare (async)
+ */
 async function translateCompare(lang) {
   state.comparisons.forEach(c => { if (!c.explanation_en) c.explanation_en = c.explanation; });
 
