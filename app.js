@@ -884,6 +884,6 @@ async function translateCompare(lang) {
     }
   } catch (err) {
     console.error(err);
-    setStatus('compareStatus', 'Translation failed. See console.');
+    setStatus('compareStatus', 'Translation failed: ' + err.message);
   }
 }
