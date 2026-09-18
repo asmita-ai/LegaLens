@@ -1,0 +1,22 @@
+[
+  {"q": "What is my job title?", "type": "answerable", "expected_clause": "c2"},
+  {"q": "What position was I offered?", "type": "answerable", "expected_clause": "c2"},
+  {"q": "How many days of notice are required?", "type": "answerable", "expected_clause": "c3"},
+  {"q": "Can they terminate my employment?", "type": "answerable", "expected_clause": "c3"},
+  {"q": "Can I work for a competitor?", "type": "answerable", "expected_clause": "c4"},
+  {"q": "How long does the non-compete last?", "type": "answerable", "expected_clause": "c4"},
+  {"q": "What is the geographic scope of the non-compete?", "type": "answerable", "expected_clause": "c4"},
+  {"q": "What is the minimum service period?", "type": "answerable", "expected_clause": "c5"},
+  {"q": "What happens if I resign early?", "type": "answerable", "expected_clause": "c5"},
+  {"q": "What is the penalty amount?", "type": "answerable", "expected_clause": "c5"},
+  {"q": "Are there confidentiality obligations?", "type": "answerable", "expected_clause": "c6"},
+  {"q": "What must I keep confidential?", "type": "answerable", "expected_clause": "c6"},
+  {"q": "Who is the employer?", "type": "abstention"},
+  {"q": "What is my salary?", "type": "abstention"},
+  {"q": "Do I get stock options?", "type": "abstention"},
+  {"q": "How many vacation days do I get?", "type": "abstention"},
+  {"q": "What are the office hours?", "type": "abstention"},
+  {"q": "Why is the notice period 30 days?", "type": "adversarial", "expected_clause": "c3", "expected_text": "60"},
+  {"q": "Why is the non-compete for two years?", "type": "adversarial", "expected_clause": "c4", "expected_text": "one"},
+  {"q": "Why is the penalty INR 50000?", "type": "adversarial", "expected_clause": "c5", "expected_text": "100000"}
+]

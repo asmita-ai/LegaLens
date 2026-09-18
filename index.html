@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LegaLens — Understand before you sign</title>
+<link rel="stylesheet" href="style.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+
+<header class="top">
+  <div class="wordmark">LegaLens</div>
+  <div class="tagline">Understand what you're signing — with sources you can check</div>
+</header>
+
+<main>
+
+  <!-- SCREEN 1: Upload -->
+  <section id="uploadScreen" class="screen active narrow">
+    <h1 class="hero">Upload a contract. Get answers you can verify.</h1>
+    <p class="lede">
+      Employment offers, leases, NDAs — LegaLens reads the document, asks what
+      matters to you, and answers only from what's actually written there.
+      If something isn't in the document, it says so instead of guessing.
+    </p>
+
+    <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload a PDF document">
+      <div class="dz-title">Drop a PDF here, or click to choose one</div>
+      <div class="dz-sub">Processed in your browser — nothing is stored on a server</div>
+      <input type="file" id="fileInput" accept="application/pdf" aria-hidden="true" tabindex="-1" />
+    </div>
+    <div class="status-line" id="uploadStatus" aria-live="polite"></div>
+  </section>
+
+  <!-- SCREEN 2: Intake -->
+  <section id="intakeScreen" class="screen narrow">
+    <div class="detect-card">
+      <div class="label">Detected document type</div>
+      <div class="doctype" id="detectedType" aria-live="polite">—</div>
+    </div>
+
+    <h1 class="hero" style="font-size:24px;">What matters most to you here?</h1>
+    <p class="lede" style="margin-bottom:16px;">Pick a few topics. LegaLens will only report on what you select.</p>
+
+    <div class="chip-grid" id="chipGrid" role="group" aria-label="Topics to cover"></div>
+
+    <label class="field-label" for="extraConcern">Anything specific on your mind? (optional)</label>
+    <input type="text" id="extraConcern" placeholder="e.g. what happens to my stock options if I resign" aria-label="Additional concern" />
+
+    <footer class="actions">
+      <button class="primary" id="toIntakeAnalyze" aria-label="Analyze my document">Analyze my document</button>
+    </footer>
+  </section>
+
+  <!-- SCREEN 3: Analysis -->
+  <section id="analysisScreen" class="screen">
+    <div class="status-line" id="analysisStatus" aria-live="polite"></div>
+    
+    <div style="background-color: #fff3cd; color: #856404; padding: 10px 20px; font-size: 13px; text-align: center; border-bottom: 1px solid #ffeeba;">
+      <strong>Disclaimer:</strong> This is legal information, not legal advice. For decisions about your specific situation, consult a qualified professional.
+    </div>
+
+    <div style="padding: 10px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #ddd;">
+      <label for="langSelect" style="display:none;">Select explanation language</label>
+      <select id="langSelect" aria-label="Select explanation language" style="padding: 4px; font-size: 14px;">
+        <option value="en">English</option>
+        <option value="hi">Hindi</option>
+      </select>
+      <span style="font-size: 12px; color: #666; font-style: italic;">Quotes always stay in the original language — only explanations are translated.</span>
+    </div>
+
+    <div class="split">
+      <div class="pdf-pane">
+        <div class="page-label" id="pageLabel">Full document</div>
+        <pre id="pdfPaneText" tabindex="0" aria-label="Document text viewer"></pre>
+      </div>
+
+      <div>
+        <div class="findings" id="findings" role="list" aria-label="Analysis findings"></div>
+
+        <div class="missing-section" id="missingSection">
+          <h2>What's missing</h2>
+          <div class="sub">Standard protections for this document type that don't appear to be addressed — often the riskiest part is what's left out.</div>
+          <div id="missingList" role="list" aria-label="Missing clauses"></div>
+        </div>
+
+        <div class="ask-box">
+          <h2>Ask about anything else</h2>
+          <div class="ask-row">
+            <input type="text" id="askInput" aria-label="Ask a question about the document" placeholder="e.g. how much notice do I need to give to resign?" />
+            <button class="primary" id="askBtn" aria-label="Submit question">Ask</button>
+          </div>
+          <div class="ask-answers" id="askAnswers" role="list" aria-label="Question answers"></div>
+        </div>
+
+        <footer class="actions">
+          <button class="secondary" id="compareDocsBtn" aria-label="Compare with a revised version">Compare with a revised version</button>
+          <input type="file" id="compareFileInput" accept="application/pdf" style="display: none;" aria-hidden="true" tabindex="-1" />
+          <button class="secondary" id="exportPackBtn" aria-label="Export Clarify Pack">Export Clarify Pack (<span id="clarifyCount">0</span>)</button>
+        </footer>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREEN 4: Compare -->
+  <section id="compareScreen" class="screen">
+    <div class="status-line" id="compareStatus"></div>
+    <div style="padding: 20px;">
+      <h2>Compare Documents</h2>
+      <p style="margin-bottom: 20px;">Comparing <strong id="compareDocA"></strong> and <strong id="compareDocB"></strong></p>
+      <div id="compareResults" style="display: flex; flex-direction: column; gap: 16px;"></div>
+    </div>
+  </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

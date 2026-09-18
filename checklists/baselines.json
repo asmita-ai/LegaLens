@@ -1,0 +1,51 @@
+{
+  "employment_contract": {
+    "label": "Employment Agreement",
+    "expected": [
+      { "id": "compensation", "label": "Compensation / CTC", "why": "You should know exactly what you're paid and when." },
+      { "id": "notice_period", "label": "Notice period", "why": "Defines how much notice either side must give to end employment." },
+      { "id": "termination", "label": "Termination conditions", "why": "Spells out when and how employment can be ended." },
+      { "id": "non_compete", "label": "Non-compete clause", "why": "Restricts where you can work after leaving — worth knowing the length and scope." },
+      { "id": "bond", "label": "Service bond / penalty", "why": "Some contracts require you to serve a minimum period or pay a penalty." },
+      { "id": "ip_assignment", "label": "IP / invention assignment", "why": "Determines who owns work you create, including outside office hours." },
+      { "id": "confidentiality", "label": "Confidentiality (NDA)", "why": "Defines what you can't share, and for how long, even after leaving." },
+      { "id": "leave_policy", "label": "Leave / PTO policy", "why": "Clarifies how much paid leave you get and what happens to unused leave." },
+      { "id": "dispute_resolution", "label": "Dispute resolution / governing law", "why": "Determines where and how disagreements are legally resolved." },
+      { "id": "equity", "label": "Stock options / equity (ESOP)", "why": "If discussed verbally, written terms should exist — silence here is a red flag." }
+    ]
+  },
+  "rental_lease": {
+    "label": "Rental / Lease Agreement",
+    "expected": [
+      { "id": "rent_amount", "label": "Rent amount & due date", "why": "Basic terms of what you owe and when." },
+      { "id": "security_deposit", "label": "Security deposit & refund terms", "why": "Clarifies how much is held and when/how you get it back." },
+      { "id": "notice_period", "label": "Notice period to vacate", "why": "How much notice either side must give before ending the lease." },
+      { "id": "lock_in_period", "label": "Lock-in period", "why": "A minimum period you're obligated to stay, sometimes with penalties for leaving early." },
+      { "id": "maintenance", "label": "Maintenance responsibilities", "why": "Who pays for repairs, and for what kind of damage." },
+      { "id": "entry_notice", "label": "Landlord entry / notice requirement", "why": "Whether the landlord must notify you before entering." },
+      { "id": "renewal_terms", "label": "Renewal / auto-renewal terms", "why": "Whether the lease renews automatically and under what terms." },
+      { "id": "subletting", "label": "Subletting / guest policy", "why": "Whether you're allowed to sublet or host long-term guests." },
+      { "id": "utilities", "label": "Utilities & who pays", "why": "Clarifies which bills are your responsibility." }
+    ]
+  },
+  "nda": {
+    "label": "NDA / Confidentiality Agreement",
+    "expected": [
+      { "id": "definition_confidential", "label": "Definition of confidential information", "why": "Sets the scope of what's actually protected." },
+      { "id": "duration", "label": "Duration of confidentiality obligation", "why": "How long you're bound after the relationship ends." },
+      { "id": "mutuality", "label": "Mutual vs one-way obligation", "why": "Whether both sides are bound, or just you." },
+      { "id": "exceptions", "label": "Exceptions (public info, prior knowledge)", "why": "Standard carve-outs that protect you from unreasonable restriction." },
+      { "id": "governing_law", "label": "Governing law / jurisdiction", "why": "Determines where any dispute would be handled." }
+    ]
+  },
+  "general_contract": {
+    "label": "General Contract / Agreement",
+    "expected": [
+      { "id": "payment_terms", "label": "Payment terms", "why": "What's owed, when, and any late fees." },
+      { "id": "termination", "label": "Termination conditions", "why": "How either side can end the agreement." },
+      { "id": "liability", "label": "Liability / indemnification", "why": "Who's responsible if something goes wrong, and whether it's capped." },
+      { "id": "dispute_resolution", "label": "Dispute resolution / governing law", "why": "Where and how disagreements are resolved." },
+      { "id": "renewal_terms", "label": "Renewal / auto-renewal terms", "why": "Whether the agreement renews automatically." }
+    ]
+  }
+}
