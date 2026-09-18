@@ -10,8 +10,11 @@
 <body>
 
 <header class="top">
-  <div class="wordmark">LegaLens</div>
-  <div class="tagline">Understand what you're signing — with sources you can check</div>
+  <div style="display:flex; align-items: baseline; gap: 14px; flex: 1;">
+    <div class="wordmark">LegaLens</div>
+    <div class="tagline">Understand what you're signing — with sources you can check</div>
+  </div>
+  <button id="startOverBtn" class="secondary" style="padding: 4px 10px; font-size: 13px;" aria-label="Start over">Start over</button>
 </header>
 
 <main>
@@ -106,6 +109,14 @@
   <!-- SCREEN 4: Compare -->
   <section id="compareScreen" class="screen">
     <div class="status-line" id="compareStatus"></div>
+    <div style="padding: 10px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #ddd; background: #fff;">
+      <label for="compareLangSelect" style="display:none;">Select explanation language</label>
+      <select id="compareLangSelect" aria-label="Select explanation language" style="padding: 4px; font-size: 14px;">
+        <option value="en">English</option>
+        <option value="hi">Hindi</option>
+      </select>
+      <span style="font-size: 12px; color: #666; font-style: italic;">Quotes always stay in the original language — only explanations are translated.</span>
+    </div>
     <div style="padding: 20px;">
       <h2>Compare Documents</h2>
       <p style="margin-bottom: 20px;">Comparing <strong id="compareDocA"></strong> and <strong id="compareDocB"></strong></p>

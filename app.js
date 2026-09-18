@@ -789,3 +789,91 @@ async function translateFindings(lang) {
     setStatus('analysisStatus', 'Translation failed: ' + e.message);
   }
 }
+
+
+// UX Additions
+
+document.getElementById('startOverBtn').addEventListener('click', startOver);
+document.getElementById('compareLangSelect').addEventListener('change', (e) => {
+  translateCompare(e.target.value);
+});
+
+function startOver() {
+  state.fileName = '';
+  state.pages = [];
+  state.fullText = '';
+  state.clauses = [];
+  state.docType = null;
+  state.docTypeLabel = '';
+  state.concerns = [];
+  state.selectedConcerns = new Set();
+  state.findings = [];
+  state.missing = [];
+  state.clarifyItems = [];
+  state.docB = { fileName: '', fullText: '', clauses: [] };
+  state.comparisons = [];
+
+  document.getElementById('fileInput').value = '';
+  document.getElementById('compareFileInput').value = '';
+  document.getElementById('extraConcern').value = '';
+  document.getElementById('askInput').value = '';
+  document.getElementById('langSelect').value = 'en';
+  document.getElementById('compareLangSelect').value = 'en';
+  
+  document.getElementById('uploadStatus').textContent = '';
+  document.getElementById('analysisStatus').textContent = '';
+  document.getElementById('compareStatus').textContent = '';
+  
+  showScreen('uploadScreen');
+}
+
+async function translateCompare(lang) {
+  state.comparisons.forEach(c => { if (!c.explanation_en) c.explanation_en = c.explanation; });
+
+  if (lang === 'en') {
+    state.comparisons.forEach(c => c.explanation = c.explanation_en);
+    renderComparisons(state.comparisons);
+    return;
+  }
+  
+  setStatus('compareStatus', 'Translating explanations...');
+  
+  const items = state.comparisons.map((c, i) => ({ index: i, text: c.explanation_en }));
+  if (items.length === 0) {
+    setStatus('compareStatus', '');
+    return;
+  }
+  
+  const langName = lang === 'hi' ? 'Hindi' : lang;
+  
+  const schema = {
+    type: 'object',
+    properties: {
+      translations: {
+        type: 'array',
+        items: { type: 'string' }
+      }
+    },
+    required: ['translations']
+  };
+  
+  const systemPrompt = `You are a legal translator. Translate the provided plain-English legal explanations into ${langName}. Maintain accuracy and a professional tone. Return an array of translated strings exactly matching the order of the inputs.`;
+  
+  const userPrompt = items.map((item, idx) => `[${idx}] ${item.text}`).join('\n\n');
+  
+  try {
+    const res = await callGemini({ systemPrompt, userPrompt, jsonSchema: schema });
+    if (res.translations && res.translations.length === items.length) {
+      items.forEach((item, idx) => {
+        state.comparisons[item.index].explanation = res.translations[idx];
+      });
+      renderComparisons(state.comparisons);
+      setStatus('compareStatus', '');
+    } else {
+      setStatus('compareStatus', 'Translation failed: mismatch in response length.');
+    }
+  } catch (err) {
+    console.error(err);
+    setStatus('compareStatus', 'Translation failed. See console.');
+  }
+}
