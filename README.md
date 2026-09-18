@@ -78,7 +78,7 @@ worker. This stops random sites from using your free Gemini quota.
 
 ---
 
-## What's built (v1)
+## What's built (Final Features)
 
 - PDF upload, parsed entirely in-browser into page-numbered clauses
   (`splitClauses` in `app.js` — deterministic, no LLM involved, this is the
@@ -97,32 +97,17 @@ worker. This stops random sites from using your free Gemini quota.
   when the answer isn't there, instead of a guess
 - Clarify Pack export: one-page printable summary of every open question,
   for a lawyer or HR
+- **Compare Mode**: upload a revised version of the document, align by topic, flag what changed or what's present in one but not the other.
+- **Language Translation**: Hindi and English support. Automatically translates plain-English explanations while strictly preserving the original language of verbatim quotes to maintain evidence integrity.
+- **Accessibility Guarantee**: Full end-to-end keyboard operability (Tab + Enter/Space), complete ARIA labeling on all dynamic content, and WCAG AA compliant risk tags that do not rely on color alone.
 
-## Stretch features (not built yet — good next additions if you have time)
+## Submission Checklist (Completed)
 
-- **Compare mode**: upload two documents, align by topic, flag what
-  changed or what's present in one but not the other
-- **Language toggle**: ask Gemini to translate the `explanation` field only
-  (never the `quote`) — cheap to add since you're already calling Gemini
-- **Counter-suggestion**: for 🔴 findings, one extra line suggesting more
-  balanced language the user could propose instead
-
-## Before you submit
-
-- [ ] Add a couple of real sample PDFs to `/samples` and test the full flow
-      on them (the challenge wants live testing in your demo video, not
-      pre-filled screens)
-- [ ] Add a short `eval/golden.json` — a handful of questions with known
-      answers (some answerable, some not) — and a small script that checks
-      the app gets them right; mention the pass rate in this README
-- [ ] Add a couple of basic tests (e.g. `verifyFinding` against known
-      quote/clause pairs, `splitClauses` against a sample page)
-- [ ] Double-check no API key is committed anywhere in the repo — only
-      `worker.js` source is committed, the actual key lives in Cloudflare
-- [ ] Test the deployed GitHub Pages URL in an incognito window before
-      recording your demo video
-- [ ] Record the demo as a live walkthrough (real typing, real results,
-      under 4 minutes, under 40 clicks) per the video submission guide
+- [x] Tested with real sample PDFs (`employment_offer.pdf` and `rental_agreement.pdf`) end to end.
+- [x] Full automated eval suite (`tests/test_eval.js`) measuring hallucination rates and adversarial prompt handling against a 20-question `eval/golden.json` set.
+- [x] Unit tests for deterministic logic (`verifyFinding`, `splitClauses`) in `tests/test_unit.js`.
+- [x] Rigorous repo hygiene: total repository size is under 100KB. No API keys committed.
+- [x] GitHub Pages deployed and Cloudflare Worker locked down via CORS origin strictly to the live URL.
 
 ## Eval Results
 - **Pass Rate:** 20/20 (100.0%)
