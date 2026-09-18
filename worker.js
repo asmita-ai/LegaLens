@@ -12,7 +12,7 @@ const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GE
 
 // Restrict which origins can call this worker. Update after you know your
 // GitHub Pages URL (e.g. "https://yourname.github.io").
-const ALLOWED_ORIGIN = "*"; // tighten this before final submission
+const ALLOWED_ORIGIN = "https://asmita-ai.github.io"; 
 
 function corsHeaders() {
   return {
