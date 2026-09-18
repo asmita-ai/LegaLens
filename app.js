@@ -536,10 +536,12 @@ Never use outside knowledge to answer factual questions about the document's ter
 function addClarifyItem(text) {
   if (!state.clarifyItems.includes(text)) state.clarifyItems.push(text);
   document.getElementById("clarifyCount").textContent = state.clarifyItems.length;
+  const compareCount = document.getElementById("compareClarifyCount");
+  if (compareCount) compareCount.textContent = state.clarifyItems.length;
 }
 
 function wireClarifyExport() {
-  document.getElementById("exportPackBtn").addEventListener("click", () => {
+  const exportFn = () => {
     const w = window.open("", "_blank");
     const rows = state.clarifyItems.map((i) => `<div class="pack-item">${escapeHtml(i)}</div>`).join("") ||
       "<p>No open items — nothing flagged for follow-up.</p>";
@@ -557,7 +559,14 @@ function wireClarifyExport() {
     `);
     w.document.close();
     w.print();
-  });
+  };
+
+  document.getElementById("exportPackBtn").addEventListener("click", exportFn);
+  
+  const compareExportBtn = document.getElementById("compareExportPackBtn");
+  if (compareExportBtn) {
+    compareExportBtn.addEventListener("click", exportFn);
+  }
 }
 
 /* ---------------------------------------------------------
@@ -666,7 +675,8 @@ Then, provide a plain-English description (2-3 sentences) of what changed betwee
 
   try {
     const result = await callGemini({ systemPrompt, userPrompt, jsonSchema: schema });
-    renderComparisons(result.comparisons || []);
+    state.comparisons = result.comparisons || [];
+    renderComparisons(state.comparisons);
     setStatus("compareStatus", "");
   } catch (e) {
     setStatus("compareStatus", "Compare failed: " + e.message);
