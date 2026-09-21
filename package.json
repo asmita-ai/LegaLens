@@ -4,7 +4,7 @@
   "description": "A GenAI legal document navigator for the \"AI for Legal Assistance & Access\" challenge. Upload a contract, tell it what you care about, and get answers that are traced back to the exact clause — or an honest \"not in this document\" instead of a guess.",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node tests/test_unit.js"
   },
   "keywords": [],
   "author": "",

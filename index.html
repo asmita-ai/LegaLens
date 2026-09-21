@@ -67,7 +67,7 @@
     </div>
 
     <div style="padding: 10px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #ddd;">
-      <label for="langSelect" style="display:none;">Select explanation language</label>
+      <label for="langSelect" class="sr-only">Select explanation language</label>
       <select id="langSelect" aria-label="Select explanation language" style="padding: 4px; font-size: 14px;">
         <option value="en">English</option>
         <option value="hi">Hindi</option>
@@ -93,6 +93,7 @@
         <div class="ask-box">
           <h2>Ask about anything else</h2>
           <div class="ask-row">
+            <label for="askInput" class="sr-only">Ask a question about the document</label>
             <input type="text" id="askInput" aria-label="Ask a question about the document" placeholder="e.g. how much notice do I need to give to resign?" />
             <button class="primary" id="askBtn" aria-label="Submit question">Ask</button>
           </div>
@@ -112,7 +113,7 @@
   <section id="compareScreen" class="screen">
     <div class="status-line" id="compareStatus"></div>
     <div style="padding: 10px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #ddd; background: #fff;">
-      <label for="compareLangSelect" style="display:none;">Select explanation language</label>
+      <label for="compareLangSelect" class="sr-only">Select explanation language</label>
       <select id="compareLangSelect" aria-label="Select explanation language" style="padding: 4px; font-size: 14px;">
         <option value="en">English</option>
         <option value="hi">Hindi</option>

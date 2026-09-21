@@ -1,3 +1,5 @@
+"use strict";
+
 /* ---------------------------------------------------------
    CONFIG — set this after you deploy the Cloudflare Worker
 --------------------------------------------------------- */
@@ -124,23 +126,29 @@ async function handleFile(file) {
   const buf = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
 
-  const pages = [];
+  const pagePromises = [];
   for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    let text = "";
-    let lastY = -1;
-    for (const it of content.items) {
-      if (lastY !== -1 && Math.abs(it.transform[5] - lastY) > 5) {
-        text += "\n";
-      } else if (text.length > 0 && !text.endsWith(" ") && !text.endsWith("\n")) {
-        text += " ";
+    pagePromises.push(pdf.getPage(i).then(async (page) => {
+      const content = await page.getTextContent();
+      let text = "";
+      let lastY = -1;
+      for (const it of content.items) {
+        if (lastY !== -1 && Math.abs(it.transform[5] - lastY) > 5) {
+          text += "\n";
+        } else if (text.length > 0 && !text.endsWith(" ") && !text.endsWith("\n")) {
+          text += " ";
+        }
+        text += it.str;
+        lastY = it.transform[5];
       }
-      text += it.str;
-      lastY = it.transform[5];
-    }
-    pages.push({ page: i, text });
+      return { page: i, text };
+    }));
   }
+  
+  const pages = await Promise.all(pagePromises);
+  // Sort by page number because Promise.all resolves order but just to be safe
+  pages.sort((a, b) => a.page - b.page);
+  
   state.pages = pages;
   state.fullText = pages.map((p) => p.text).join("\n\n");
   state.clauses = splitClauses(pages);
@@ -259,6 +267,7 @@ function renderIntake() {
   document.getElementById("detectedType").textContent = state.docTypeLabel;
   const grid = document.getElementById("chipGrid");
   grid.innerHTML = "";
+  const frag = document.createDocumentFragment();
   state.concerns.forEach((c) => {
     const chip = document.createElement("div");
     chip.className = "chip";
@@ -284,8 +293,31 @@ function renderIntake() {
         toggleChip();
       }
     });
-    grid.appendChild(chip);
+    frag.appendChild(chip);
   });
+  grid.appendChild(frag);
+  
+  const extraInput = document.getElementById("extraConcern");
+  if (extraInput && !extraInput.hasAttribute("data-listening")) {
+    extraInput.addEventListener("input", checkIntakeReady);
+    extraInput.setAttribute("data-listening", "true");
+  }
+  
+  checkIntakeReady();
+}
+
+/**
+ * checkIntakeReady
+ */
+function checkIntakeReady() {
+  const btn = document.getElementById("toIntakeAnalyze");
+  if (!btn) return;
+  const hasExtra = document.getElementById("extraConcern")?.value.trim().length > 0;
+  if (state.selectedConcerns.size > 0 || hasExtra) {
+    btn.disabled = false;
+  } else {
+    btn.disabled = true;
+  }
 }
 
 /* ---------------------------------------------------------
@@ -393,6 +425,7 @@ function verifyFinding(f) {
 function renderFindings() {
   const wrap = document.getElementById("findings");
   wrap.innerHTML = "";
+  const frag = document.createDocumentFragment();
   state.findings.forEach((f) => {
     const card = document.createElement("div");
     card.className = `finding-card risk-${f.risk || "neutral"}`;
@@ -405,14 +438,15 @@ function renderFindings() {
       <div class="finding-topic">${escapeHtml(f.topic)}
         <span class="risk-tag risk-${f.risk || "neutral"}">${escapeHtml(riskLabel)}</span>
       </div>
-      <div class="finding-explanation">${f.explanation}</div>
+      <div class="finding-explanation">${escapeHtml(f.explanation)}</div>
       ${f.found && f.quote ? `<blockquote class="finding-quote">"${escapeHtml(f.quote)}"</blockquote>` : ""}
       ${f.found && f.verified ? `<button class="finding-ref" data-clause="${f.clauseId}" aria-label="View clause ${f.clauseId} on page ${f.page}">View Clause → Page ${f.page}</button>` : ""}
       ${f.found && !f.verified ? `<div class="unverified-note">Could not verify this quote against the document — treat with caution and check clause ${f.clauseId || "manually"} yourself.</div>` : ""}
       ${!f.found ? `<button class="finding-ref add-clarify" data-topic="${escapeHtml(f.topic)}" aria-label="Add missing topic to Clarify Pack">+ Add to Clarify Pack</button>` : ""}
     `;
-    wrap.appendChild(card);
+    frag.appendChild(card);
   });
+  wrap.appendChild(frag);
 
   wrap.querySelectorAll(".finding-ref[data-clause]").forEach((btn) => {
     btn.addEventListener("click", () => jumpToClause(btn.dataset.clause));
@@ -480,18 +514,20 @@ function renderMissing() {
     return;
   }
   section.style.display = "block";
+  const frag = document.createDocumentFragment();
   state.missing.forEach((m) => {
     const row = document.createElement("div");
     row.className = "missing-card";
     row.innerHTML = `
       <div>
         <div class="m-label">${escapeHtml(m.label)}</div>
-        <div class="m-why">${m.why}</div>
+        <div class="m-why">${escapeHtml(m.why)}</div>
       </div>
       <button class="secondary add-missing" data-label="${escapeHtml(m.label)}">Add to Clarify Pack</button>
     `;
-    list.appendChild(row);
+    frag.appendChild(row);
   });
+  list.appendChild(frag);
   list.querySelectorAll(".add-missing").forEach((btn) => {
     btn.addEventListener("click", () => {
       addClarifyItem(`Ask about: ${btn.dataset.label} — this standard clause was not found in your document.`);
@@ -675,23 +711,27 @@ async function handleCompareFile(file) {
   const buf = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
   
-  const pages = [];
+  const pagePromises = [];
   for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    let text = "";
-    let lastY = -1;
-    for (const it of content.items) {
-      if (lastY !== -1 && Math.abs(it.transform[5] - lastY) > 5) {
-        text += "\n";
-      } else if (text.length > 0 && !text.endsWith(" ") && !text.endsWith("\n")) {
-        text += " ";
+    pagePromises.push(pdf.getPage(i).then(async (page) => {
+      const content = await page.getTextContent();
+      let text = "";
+      let lastY = -1;
+      for (const it of content.items) {
+        if (lastY !== -1 && Math.abs(it.transform[5] - lastY) > 5) {
+          text += "\n";
+        } else if (text.length > 0 && !text.endsWith(" ") && !text.endsWith("\n")) {
+          text += " ";
+        }
+        text += it.str;
+        lastY = it.transform[5];
       }
-      text += it.str;
-      lastY = it.transform[5];
-    }
-    pages.push({ page: i, text });
+      return { page: i, text };
+    }));
   }
+  
+  const pages = await Promise.all(pagePromises);
+  pages.sort((a, b) => a.page - b.page);
   
   state.docB.fullText = pages.map((p) => p.text).join("\n\n");
   state.docB.clauses = splitClauses(pages);
@@ -774,6 +814,7 @@ function verifyCompareQuote(quote, clauseId, clauses, fullText) {
 function renderComparisons(comparisons) {
   const wrap = document.getElementById("compareResults");
   wrap.innerHTML = "";
+  const frag = document.createDocumentFragment();
   
   comparisons.forEach(c => {
     const vA = c.docAFound ? verifyCompareQuote(c.docAQuote, c.docAClauseId, state.clauses, state.fullText) : { verified: false };
@@ -807,8 +848,9 @@ function renderComparisons(comparisons) {
         ${bHtml}
       </div>
     `;
-    wrap.appendChild(card);
+    frag.appendChild(card);
   });
+  wrap.appendChild(frag);
 }
 
 /* ---------------------------------------------------------
@@ -836,6 +878,7 @@ async function translateFindings(lang) {
     state.findings.forEach(f => f.explanation = f.explanation_en);
     state.missing.forEach(m => m.explanation = m.explanation_en);
     renderFindings();
+    renderMissing();
     return;
   }
   
@@ -875,6 +918,7 @@ async function translateFindings(lang) {
         if (item.type === 'missing') state.missing[item.index].explanation = res.translations[idx];
       });
       renderFindings();
+      renderMissing();
       setStatus('analysisStatus', '');
     } else {
       setStatus('analysisStatus', 'Translation failed: mismatch in array lengths');

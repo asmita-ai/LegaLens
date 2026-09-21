@@ -1,6 +1,20 @@
 const { chromium } = require('playwright');
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
 
 async function run() {
+  const server = http.createServer((req, res) => {
+    let filePath = path.join(__dirname, '..', req.url);
+    if (req.url === '/') filePath = path.join(__dirname, '..', 'index.html');
+    fs.readFile(filePath, (error, content) => {
+      if (error) { res.writeHead(404); res.end(); }
+      else { res.writeHead(200); res.end(content, 'utf-8'); }
+    });
+  });
+  
+  server.listen(8006);
+
   const browser = await chromium.launch();
   const context = await browser.newContext();
   const page = await context.newPage();
@@ -65,6 +79,7 @@ async function run() {
   }
 
   await browser.close();
+  server.close();
 }
 
 run();
